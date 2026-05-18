@@ -1,0 +1,66 @@
+@page "/"
+@using BlazorClient.Shared
+@using BlazorClient.Services
+@inject ProductService ProductService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<h2>Товары</h2>
+
+<button class="btn btn-primary mb-3" @onclick="@(() => Navigation.NavigateTo("/add"))">Добавить</button>
+
+@if (products is null)
+{
+    <p>Загрузка...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Название</th>
+                <th>Цена</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in products)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.Name</td>
+                    <td>@p.Price.ToString("C")</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="@(() => Edit(p.Id))">Изменить</button>
+                        <button class="btn btn-sm btn-danger ms-1" @onclick="@(() => Delete(p))">Удалить</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Product>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductService.GetAll();
+    }
+
+    private void Edit(int id)
+    {
+        Navigation.NavigateTo($"/edit/{id}");
+    }
+
+    private async Task Delete(Product product)
+    {
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить {product.Name}?");
+        if (confirmed)
+        {
+            await ProductService.Delete(product.Id);
+            products = await ProductService.GetAll();
+        }
+    }
+}
