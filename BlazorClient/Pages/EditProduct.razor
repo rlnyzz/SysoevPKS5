@@ -4,31 +4,51 @@
 @inject ProductService ProductService
 @inject NavigationManager Navigation
 
-<h3>Изменить товар</h3>
-
-@if (product is null)
-{
-    <p>Загрузка...</p>
-}
-else
-{
-    <EditForm Model="@product" OnValidSubmit="@HandleSubmit">
-        <div class="mb-3">
-            <label class="form-label">Название</label>
-            <InputText class="form-control" @bind-Value="product.Name" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Цена</label>
-            <InputNumber class="form-control" @bind-Value="product.Price" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Описание</label>
-            <InputTextArea class="form-control" @bind-Value="product.Description" />
-        </div>
-        <button class="btn btn-success" type="submit">Сохранить</button>
-        <button class="btn btn-secondary ms-2" @onclick="@(() => Navigation.NavigateTo("/"))">Назад</button>
-    </EditForm>
-}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        @if (product is null)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border text-warning" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2 text-muted">Загрузка товара...</p>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">✏️ Изменить товар</h4>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="product" OnValidSubmit="HandleSubmit">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Название</label>
+                            <InputText class="form-control" @bind-Value="product.Name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Цена (₽)</label>
+                            <InputNumber class="form-control" @bind-Value="product.Price" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Описание</label>
+                            <InputTextArea class="form-control" @bind-Value="product.Description" rows="3" />
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-warning" type="submit">
+                                💾 Сохранить
+                            </button>
+                            <button class="btn btn-outline-secondary" type="button" @onclick="GoBack">
+                                ↩️ Назад
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     [Parameter] public int Id { get; set; }
@@ -46,5 +66,10 @@ else
             await ProductService.Update(product);
             Navigation.NavigateTo("/");
         }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
     }
 }

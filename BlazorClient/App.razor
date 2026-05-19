@@ -1,5 +1,11 @@
-﻿<Router AppAssembly="@typeof(Program).Assembly">
+﻿<Router AppAssembly="@typeof(BlazorClient.App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(BlazorClient.Shared.MainLayout)" />
     </Found>
+    <NotFound>
+        <PageTitle>Не найдено</PageTitle>
+        <LayoutView Layout="@typeof(BlazorClient.Shared.MainLayout)">
+            <p>Страница не найдена.</p>
+        </LayoutView>
+    </NotFound>
 </Router>

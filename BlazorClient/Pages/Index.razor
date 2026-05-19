@@ -5,40 +5,70 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 
-<h2>Товары</h2>
-
-<button class="btn btn-primary mb-3" @onclick="@(() => Navigation.NavigateTo("/add"))">Добавить</button>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">📦 Товары</h2>
+    <button class="btn btn-success" @onclick="@(() => Navigation.NavigateTo("/add"))">
+        ➕ Добавить товар
+    </button>
+</div>
 
 @if (products is null)
 {
-    <p>Загрузка...</p>
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-2 text-muted">Загрузка товаров...</p>
+    </div>
+}
+else if (products.Count == 0)
+{
+    <div class="text-center py-5">
+        <p class="text-muted fs-5">📭 Нет товаров</p>
+        <p class="text-muted">Добавьте первый товар, нажав кнопку выше</p>
+    </div>
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Название</th>
-                <th>Цена</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in products)
-            {
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
                 <tr>
-                    <td>@p.Id</td>
-                    <td>@p.Name</td>
-                    <td>@p.Price.ToString("C")</td>
-                    <td>
-                        <button class="btn btn-sm btn-warning" @onclick="@(() => Edit(p.Id))">Изменить</button>
-                        <button class="btn btn-sm btn-danger ms-1" @onclick="@(() => Delete(p))">Удалить</button>
-                    </td>
+                    <th scope="col" style="width: 60px;">ID</th>
+                    <th scope="col">Название</th>
+                    <th scope="col" style="width: 150px;">Цена</th>
+                    <th scope="col" style="width: 200px;">Действия</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var p in products)
+                {
+                    <tr>
+                        <td class="text-muted">#@p.Id</td>
+                        <td>
+                            <strong>@p.Name</strong>
+                            @if (!string.IsNullOrEmpty(p.Description))
+                            {
+                                <br />
+                                <small class="text-muted">@p.Description</small>
+                            }
+                        </td>
+                        <td class="fw-bold text-success">@p.Price.ToString("C0")</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-warning" @onclick="@(() => Edit(p.Id))">
+                                    ✏️ Изменить
+                                </button>
+                                <button class="btn btn-outline-danger" @onclick="@(() => Delete(p))">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
@@ -46,7 +76,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
         products = await ProductService.GetAll();
+        StateHasChanged();
     }
 
     private void Edit(int id)
@@ -56,11 +92,11 @@ else
 
     private async Task Delete(Product product)
     {
-        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Удалить {product.Name}?");
+        bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Вы уверены, что хотите удалить \"{product.Name}\"?");
         if (confirmed)
         {
             await ProductService.Delete(product.Id);
-            products = await ProductService.GetAll();
+            await LoadProducts();
         }
     }
 }

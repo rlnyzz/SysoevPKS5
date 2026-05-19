@@ -1,23 +1,49 @@
 ﻿@inherits LayoutComponentBase
 @inject IJSRuntime JSRuntime
 
-<div class="page">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-        <a class="navbar-brand" href="/">Магазин</a>
-        <div class="ms-auto">
-            <button class="btn btn-outline-light" @onclick="ToggleTheme">🌓</button>
+<div class="min-vh-100 d-flex flex-column">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                🛒 Магазин
+            </a>
+            <div class="ms-auto">
+                <button class="btn btn-outline-light rounded-pill px-3" @onclick="ToggleTheme">
+                    @if (isDark)
+                    {
+                        <span>☀️ Светлая</span>
+                    }
+                    else
+                    {
+                        <span>🌙 Тёмная</span>
+                    }
+                </button>
+            </div>
         </div>
     </nav>
-    <main class="container mt-4">
+
+    <main class="container flex-grow-1 py-4">
         @Body
     </main>
+
+    <footer class="bg-light py-3 text-center text-muted border-top">
+        <small>© 2026 Магазин — Практическая работа №6</small>
+    </footer>
 </div>
 
 @code {
+    private bool isDark = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var theme = await JSRuntime.InvokeAsync<string>("getTheme");
+        isDark = theme == "dark";
+    }
+
     private async Task ToggleTheme()
     {
-        var current = await JSRuntime.InvokeAsync<string>("getTheme");
-        var next = current == "dark" ? "light" : "dark";
-        await JSRuntime.InvokeVoidAsync("setTheme", next);
+        isDark = !isDark;
+        var theme = isDark ? "dark" : "light";
+        await JSRuntime.InvokeVoidAsync("setTheme", theme);
     }
 }
